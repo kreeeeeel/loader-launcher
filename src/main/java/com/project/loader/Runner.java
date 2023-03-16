@@ -32,7 +32,7 @@ public class Runner extends Application {
 
     public boolean isInternetAvailable() {
         try (Socket socket = new Socket()) {
-            socket.connect(new InetSocketAddress("spring-boot-minecraft.herokuapp.com", 51737), 10);
+            socket.connect(new InetSocketAddress("localhost", 8745), 10);
             return true;
         } catch (IOException e) {
             return false;
