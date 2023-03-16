@@ -72,6 +72,6 @@ public class DownloadHandler implements Callback<ResponseBody> {
 
     @Override
     public void onFailure(Call<ResponseBody> call, Throwable throwable) {
-
+        System.out.println(throwable.getMessage());
     }
 }

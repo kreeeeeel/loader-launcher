@@ -72,7 +72,7 @@ public class FilesHandler implements Callback<LoaderResponse> {
 
             for (FileResponse fileResponse : loaderResponse.getFiles()) {
 
-                File file = new File(fileResponse.getPath());
+                File file = new File(Runner.launcher.getPath() + fileResponse.getPath().replace("loader\\", ""));
                 String hash = null;
                 try {
                     hash = md5Utils.getMD5File(file.getAbsolutePath());

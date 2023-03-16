@@ -8,7 +8,7 @@ public class RetrofitUtils {
 
     public static void generate() {
         retrofit = new Retrofit.Builder()
-                .baseUrl("https://spring-boot-minecraft.herokuapp.com")
+                .baseUrl("http://localhost:8745")
                 .addConverterFactory(GsonConverterFactory.create())
                 .build();
     }
