@@ -1,11 +1,12 @@
 package com.project.loader.retrofit.handler;
 
 import com.project.loader.Runner;
+import com.project.loader.dto.ProcessFile;
 import com.project.loader.retrofit.api.LoadAPI;
 import com.project.loader.retrofit.response.FileResponse;
 import com.project.loader.retrofit.response.LoaderResponse;
+import com.project.loader.utils.DownloadUtils;
 import com.project.loader.utils.LaunchUtils;
-import com.project.loader.utils.MD5Utils;
 import com.project.loader.utils.RetrofitUtils;
 import javafx.application.Platform;
 import javafx.scene.control.ProgressIndicator;
@@ -14,22 +15,19 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.security.NoSuchAlgorithmException;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 import static com.project.loader.controller.LoaderController.progressBar;
 import static com.project.loader.controller.LoaderController.updaterFile;
 
 public class FilesHandler implements Callback<LoaderResponse> {
-
-    public static AtomicInteger sendRequest = new AtomicInteger(0);
-    public static AtomicInteger successRequest = new AtomicInteger(0);
 
     @Override
     public void onResponse(Call<LoaderResponse> call, Response<LoaderResponse> response) {
@@ -44,66 +42,58 @@ public class FilesHandler implements Callback<LoaderResponse> {
 
         ExecutorService service = Executors.newSingleThreadExecutor();
         service.execute(() -> {
-
-            sendRequest.set(0);
-            successRequest.set(0);
-
             Platform.runLater(() -> updaterFile.setText("Подготовка к обновлению.."));
 
             LoadAPI loadAPI = RetrofitUtils.getRetrofit().create(LoadAPI.class);
-            MD5Utils md5Utils = new MD5Utils();
 
             if (Runner.launcher.mkdir()) {
                 Platform.runLater(() -> updaterFile.setText("Создание папки для сборки."));
             }
 
-            for (String fileName : loaderResponse.getFolders()) {
+            loaderResponse.getFolders().stream()
+                    .map(file -> new File(Runner.launcher + file.replace("loader", "")))
+                    .filter(File::mkdir)
+                    .forEach(file -> Platform.runLater(() -> {
+                        updaterFile.setText(file.getName());
+                        progressBar.setProgress(ProgressIndicator.INDETERMINATE_PROGRESS);
+                    }));
 
-                File file = new File(Runner.launcher + fileName.replace("loader", ""));
-                if (!file.mkdir()) {
-                    continue;
-                }
+            List<ProcessFile> processFiles = loaderResponse.getFiles().stream()
+                    .map(this::createProcessFile)
+                    .filter(ProcessFile::filterFilesToRequest)
+                    .map(it -> it.setCall(loadAPI.download(buildFilePath(it))))
+                    .collect(Collectors.toList());
 
-                Platform.runLater(() -> {
-                    updaterFile.setText(fileName);
-                    progressBar.setProgress(ProgressIndicator.INDETERMINATE_PROGRESS);
-                });
-            }
+            AtomicInteger counter = new AtomicInteger(0);
+            processFiles.parallelStream().forEach(it ->
+                    DownloadUtils.onResponse(it.getServerPath(), it.getCall(), (double) counter.incrementAndGet() / processFiles.size())
+            );
 
-            for (FileResponse fileResponse : loaderResponse.getFiles()) {
-
-                String filePath = fileResponse.getPath().replace("loader", "");
-                File file = new File(Runner.launcher.getPath() + filePath);
-                String hash = null;
-                try {
-                    hash = md5Utils.getMD5File(file.getAbsolutePath());
-                } catch (IOException | NoSuchAlgorithmException e) {
-                    System.out.println("Not md5 hash in file: " + fileResponse.getPath());
-                }
-
-                Platform.runLater(() -> updaterFile.setText(filePath));
-                if (!file.exists() || hash == null || !hash.equals(fileResponse.getMd5()) || file.length() != fileResponse.getSize()) {
-                    sendRequest.incrementAndGet();
-                    try {
-                        loadAPI.download(URLEncoder.encode(fileResponse.getPath().replace("\\", "/"), StandardCharsets.UTF_8.toString()))
-                                .enqueue(new DownloadHandler(fileResponse));
-                    } catch (UnsupportedEncodingException e) {
-                        System.out.println(e.getMessage());
-                    }
-                }
-            }
-
-            if (sendRequest.get() == 0) {
-                LaunchUtils launchUtils = new LaunchUtils();
-                launchUtils.launch();
-            }
-
+            new LaunchUtils().launch();
         });
     }
 
     @Override
     public void onFailure(Call<LoaderResponse> call, Throwable throwable) {
+    }
 
+    private ProcessFile createProcessFile(FileResponse fileResponse) {
+        return new ProcessFile(
+                new File(
+                        Runner.launcher.getPath() + fileResponse.getPath().replace("loader", "")
+                ),
+                fileResponse.getMd5(),
+                fileResponse.getSize(),
+                fileResponse.getPath().replace("\\", "/")
+        );
+    }
+
+    private String buildFilePath(ProcessFile processFile) {
+        try {
+            return URLEncoder.encode(processFile.getServerPath(), StandardCharsets.UTF_8.toString());
+        } catch (UnsupportedEncodingException e) {
+            throw new RuntimeException(e);
+        }
     }
 
 }

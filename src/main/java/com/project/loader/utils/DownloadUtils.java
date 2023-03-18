@@ -1,37 +1,34 @@
-package com.project.loader.retrofit.handler;
+package com.project.loader.utils;
 
 import com.project.loader.Runner;
-import com.project.loader.retrofit.response.FileResponse;
-import com.project.loader.utils.LaunchUtils;
 import javafx.application.Platform;
 import okhttp3.ResponseBody;
 import retrofit2.Call;
-import retrofit2.Callback;
 import retrofit2.Response;
 
-import java.io.*;
+import java.io.BufferedInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 
 import static com.project.loader.controller.LoaderController.progressBar;
 import static com.project.loader.controller.LoaderController.updaterFile;
-import static com.project.loader.retrofit.handler.FilesHandler.sendRequest;
-import static com.project.loader.retrofit.handler.FilesHandler.successRequest;
 
-public class DownloadHandler implements Callback<ResponseBody> {
+public class DownloadUtils {
 
-    private final FileResponse fileResponse;
 
-    DownloadHandler(FileResponse fileResponse) {
-        this.fileResponse = fileResponse;
-    }
-
-    @Override
-    public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-
-        int cur = successRequest.incrementAndGet();
+    public static void onResponse(String filePath, Call<ResponseBody> call, double progress) {
+        Response<ResponseBody> response = null;
+        try {
+            response = call.execute();
+        } catch (IOException e) {
+            System.out.println(e);
+            throw new RuntimeException(e);
+        }
 
         Platform.runLater(() -> {
-            updaterFile.setText(fileResponse.getPath().replace("loader", ""));
-            progressBar.setProgress((double) cur / sendRequest.get());
+            updaterFile.setText(filePath.replace("loader", ""));
+            progressBar.setProgress(progress);
         });
 
         if (!response.isSuccessful()) {
@@ -46,7 +43,7 @@ public class DownloadHandler implements Callback<ResponseBody> {
                 inputStream = new BufferedInputStream(responseBody.byteStream());
             }
 
-            String path = Runner.launcher + fileResponse.getPath().replace("loader", "");
+            String path = Runner.launcher + filePath.replace("loader", "");
             FileOutputStream fileOutputStream = new FileOutputStream(path);
 
             byte[] buffer = new byte[65536];
@@ -60,18 +57,8 @@ public class DownloadHandler implements Callback<ResponseBody> {
                 inputStream.close();
             }
             fileOutputStream.close();
-        } catch (IOException ex){
+        } catch (IOException ex) {
             System.out.println(ex.getMessage());
         }
-
-        if (sendRequest.get() == cur) {
-            LaunchUtils launchUtils = new LaunchUtils();
-            launchUtils.launch();
-        }
-    }
-
-    @Override
-    public void onFailure(Call<ResponseBody> call, Throwable throwable) {
-        System.out.println(throwable.getMessage());
     }
 }
