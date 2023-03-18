@@ -149,7 +149,6 @@ public class LoaderController extends Application {
         ExecutorService service = Executors.newSingleThreadExecutor();
         service.execute(() -> {
 
-            RetrofitUtils.generate();
             LoadAPI loadAPI = RetrofitUtils.getRetrofit().create(LoadAPI.class);
             loadAPI.getFiles().enqueue(new FilesHandler());
             

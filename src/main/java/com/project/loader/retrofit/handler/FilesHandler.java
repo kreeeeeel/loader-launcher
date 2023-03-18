@@ -59,7 +59,7 @@ public class FilesHandler implements Callback<LoaderResponse> {
 
             for (String fileName : loaderResponse.getFolders()) {
 
-                File file = new File(Runner.launcher + File.separator + fileName.replace("loader\\", ""));
+                File file = new File(Runner.launcher + fileName.replace("loader", ""));
                 if (!file.mkdir()) {
                     continue;
                 }
@@ -72,7 +72,8 @@ public class FilesHandler implements Callback<LoaderResponse> {
 
             for (FileResponse fileResponse : loaderResponse.getFiles()) {
 
-                File file = new File(Runner.launcher.getPath() + fileResponse.getPath().replace("loader\\", ""));
+                String filePath = fileResponse.getPath().replace("loader", "");
+                File file = new File(Runner.launcher.getPath() + filePath);
                 String hash = null;
                 try {
                     hash = md5Utils.getMD5File(file.getAbsolutePath());

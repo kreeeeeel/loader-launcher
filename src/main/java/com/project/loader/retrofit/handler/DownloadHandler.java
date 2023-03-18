@@ -30,7 +30,7 @@ public class DownloadHandler implements Callback<ResponseBody> {
         int cur = successRequest.incrementAndGet();
 
         Platform.runLater(() -> {
-            updaterFile.setText(fileResponse.getPath().replace("loader\\", ""));
+            updaterFile.setText(fileResponse.getPath().replace("loader", ""));
             progressBar.setProgress((double) cur / sendRequest.get());
         });
 
@@ -46,7 +46,7 @@ public class DownloadHandler implements Callback<ResponseBody> {
                 inputStream = new BufferedInputStream(responseBody.byteStream());
             }
 
-            String path = Runner.launcher + File.separator + fileResponse.getPath().replace("loader\\", "");
+            String path = Runner.launcher + fileResponse.getPath().replace("loader", "");
             FileOutputStream fileOutputStream = new FileOutputStream(path);
 
             byte[] buffer = new byte[65536];
