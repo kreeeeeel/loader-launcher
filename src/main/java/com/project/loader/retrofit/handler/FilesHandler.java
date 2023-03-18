@@ -38,7 +38,7 @@ public class FilesHandler implements Callback<LoaderResponse> {
         }
 
         LoaderResponse loaderResponse = response.body();
-        if (loaderResponse == null){
+        if (loaderResponse == null) {
             return;
         }
 
@@ -81,11 +81,12 @@ public class FilesHandler implements Callback<LoaderResponse> {
                     System.out.println("Not md5 hash in file: " + fileResponse.getPath());
                 }
 
-                Platform.runLater(() -> updaterFile.setText(fileResponse.getPath()));
+                Platform.runLater(() -> updaterFile.setText(filePath));
                 if (!file.exists() || hash == null || !hash.equals(fileResponse.getMd5()) || file.length() != fileResponse.getSize()) {
                     sendRequest.incrementAndGet();
                     try {
-                        loadAPI.download(URLEncoder.encode(fileResponse.getPath().replace("\\", "/"), StandardCharsets.UTF_8.toString())).enqueue(new DownloadHandler(fileResponse));
+                        loadAPI.download(URLEncoder.encode(fileResponse.getPath().replace("\\", "/"), StandardCharsets.UTF_8.toString()))
+                                .enqueue(new DownloadHandler(fileResponse));
                     } catch (UnsupportedEncodingException e) {
                         System.out.println(e.getMessage());
                     }

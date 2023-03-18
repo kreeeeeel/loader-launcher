@@ -57,7 +57,7 @@ public class LoaderController extends Application {
         top.setPrefSize(600, 38);
         top.setStyle("-fx-background-color: black");
 
-        Label name = new Label("NikitaPidor.com");
+        Label name = new Label("EnchantedCraft");
         name.setFont(Font.font("Franklin Gothic Medium", 18));
         name.setTextFill(Paint.valueOf("#aeaeae"));
         name.setLayoutX(54);
