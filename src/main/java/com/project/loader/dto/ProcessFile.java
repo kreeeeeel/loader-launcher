@@ -28,22 +28,6 @@ public class ProcessFile {
         return this;
     }
 
-    public File getFile() {
-        return file;
-    }
-
-    public String getFileHash() {
-        return fileHash;
-    }
-
-    public String getServerHash() {
-        return serverHash;
-    }
-
-    public long getServerSize() {
-        return serverSize;
-    }
-
     public String getServerPath() {
         return serverPath;
     }

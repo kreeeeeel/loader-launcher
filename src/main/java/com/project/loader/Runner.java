@@ -23,7 +23,7 @@ public class Runner extends Application {
     public void start(Stage stage) {
 
         String home = System.getenv("APPDATA");
-        launcher = new File(home + "/.nikitapidor");
+        launcher = new File(home + "/.enchantedcraft");
 
         RetrofitUtils.generate();
         Retrofit retrofit = RetrofitUtils.getRetrofit();

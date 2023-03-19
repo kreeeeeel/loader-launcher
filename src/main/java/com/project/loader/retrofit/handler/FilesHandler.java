@@ -42,7 +42,7 @@ public class FilesHandler implements Callback<LoaderResponse> {
 
         ExecutorService service = Executors.newSingleThreadExecutor();
         service.execute(() -> {
-            Platform.runLater(() -> updaterFile.setText("Подготовка к обновлению.."));
+            Platform.runLater(() -> updaterFile.setText("Проверка файлов.."));
 
             LoadAPI loadAPI = RetrofitUtils.getRetrofit().create(LoadAPI.class);
 
@@ -68,7 +68,6 @@ public class FilesHandler implements Callback<LoaderResponse> {
             processFiles.parallelStream().forEach(it ->
                     DownloadUtils.onResponse(it.getServerPath(), it.getCall(), (double) counter.incrementAndGet() / processFiles.size())
             );
-
             new LaunchUtils().launch();
         });
     }
