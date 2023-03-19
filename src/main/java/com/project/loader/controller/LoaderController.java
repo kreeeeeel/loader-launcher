@@ -32,6 +32,7 @@ public class LoaderController extends Application {
     private double stagePosY;
 
     public static Label updaterFile;
+    public static Label updaterTitle;
     public static ProgressBar progressBar;
 
     @Override
@@ -94,11 +95,11 @@ public class LoaderController extends Application {
         spinner.setLayoutX(8);
         spinner.setLayoutY(48);
 
-        Label update = new Label("Обновление файлов..");
-        update.setFont(Font.font("Franklin Gothic Medium", 20));
-        update.setTextFill(Paint.valueOf("#544646"));
-        update.setLayoutX(82);
-        update.setLayoutY(51);
+        updaterTitle = new Label("Пожалуйста подождите..");
+        updaterTitle.setFont(Font.font("Franklin Gothic Medium", 20));
+        updaterTitle.setTextFill(Paint.valueOf("#544646"));
+        updaterTitle.setLayoutX(82);
+        updaterTitle.setLayoutY(51);
 
         updaterFile = new Label("Проверка файлов..");
         updaterFile.setFont(Font.font("Franklin Gothic Medium", 14));
@@ -113,7 +114,7 @@ public class LoaderController extends Application {
         progressBar.setPrefSize(501, 18);
         progressBar.setStyle("-fx-background-color: white");
 
-        root.getChildren().addAll(top, spinner, update, updaterFile, progressBar);
+        root.getChildren().addAll(top, spinner, updaterTitle, updaterFile, progressBar);
 
         getFiles();
     }
